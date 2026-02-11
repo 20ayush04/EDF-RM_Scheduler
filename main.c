@@ -17,13 +17,22 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    GET_DATA(fp);
+    getData(fp);
     fclose(fp);
 
-    int hyperperiod = COMPUTE_HYPERPERIOD();
+    double u = computeUtilization();
 
-    EDF_SCHEDULER(hyperperiod);
-    RM_SCHEDULER(hyperperiod);
+    printf("Total Utilization = %.3f\n", u);
+
+    if (u > 1.0) {
+        printf("Task Set is NOT schedulable (Utilization > 1)\n");
+        return 0;
+    }
+
+    int hyperperiod = computeHyperperiod();
+
+    edfScheduler(hyperperiod);
+    rmScheduler(hyperperiod);
 
     return 0;
 }

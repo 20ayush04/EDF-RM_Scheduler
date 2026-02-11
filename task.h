@@ -6,28 +6,29 @@
 #define MAX_TASKS 50
 
 typedef struct {
-    int task_id;
+    int taskId;
 
     int phase;
     int period;
     int wcet;
     int deadline;
 
-    int remaining_time;
-    int next_release;
-    int abs_deadline;
+    int remainingTime;
+    int nextRelease;
+    int absDeadline;
 
-    int job_count;
-    int current_job;
+    int jobCount;
+    int currentJob;
 
-    int last_exec_time;   /* for EDF tie-breaking */
+    int lastExecTime;   /* for EDF tie-breaking */
 } Task;
 
-extern Task task_set[MAX_TASKS];
-extern int NUM_TASKS;
+extern Task taskSet[MAX_TASKS];
+extern int numTasks;
 
-void GET_DATA(FILE *fp);
-int COMPUTE_HYPERPERIOD(void);
-void RESET_TASK_STATE(void);
+void getData(FILE *fp);
+void resetTaskState(void);
+int computeHyperperiod(void);
+double computeUtilization(void);
 
 #endif

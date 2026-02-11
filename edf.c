@@ -3,43 +3,47 @@
 #include "pq.h"
 #include "task.h"
 
-void EDF_SCHEDULER(int hyperperiod) {
+void edfScheduler(int hyperperiod) {
+
     PriorityQueue pq;
-    PQ_INIT(&pq);
-    RESET_TASK_STATE();
+    pqInit(&pq);
+    resetTaskState();
 
     printf("\nEDF Scheduling\n");
 
     for (int time = 0; time < hyperperiod; time++) {
 
-        for (int i = 0; i < NUM_TASKS; i++) {
-            if (time == task_set[i].next_release) {
-                task_set[i].remaining_time = task_set[i].wcet;
-                task_set[i].abs_deadline   = time + task_set[i].deadline;
-                task_set[i].next_release  += task_set[i].period;
+        for (int i = 0; i < numTasks; i++) {
+            if (time == taskSet[i].nextRelease) {
 
-                task_set[i].job_count++;
-                task_set[i].current_job = task_set[i].job_count;
+                taskSet[i].remainingTime = taskSet[i].wcet;
+                taskSet[i].absDeadline = time + taskSet[i].deadline;
+                taskSet[i].nextRelease += taskSet[i].period;
 
-                PQ_PUSH_EDF(&pq, &task_set[i]);
+                taskSet[i].jobCount++;
+                taskSet[i].currentJob = taskSet[i].jobCount;
+
+                pqPushEdf(&pq, &taskSet[i]);
             }
         }
 
-        if (!PQ_EMPTY(&pq)) {
-            Task *t = PQ_POP_EDF(&pq);
+        if (!pqEmpty(&pq)) {
+
+            Task *t = pqPopEdf(&pq);
 
             printf("Time %d -> TASK%d JOB%d",
-                   time, t->task_id, t->current_job);
+                   time, t->taskId, t->currentJob);
 
-            t->remaining_time--;
-            t->last_exec_time = time;
+            t->remainingTime--;
+            t->lastExecTime = time;
 
-            if (t->remaining_time == 0) {
+            if (t->remainingTime == 0)
                 printf(" (Done)\n");
-            } else {
+            else {
                 printf("\n");
-                PQ_PUSH_EDF(&pq, t);
+                pqPushEdf(&pq, t);
             }
+
         } else {
             printf("Time %d -> IDLE\n", time);
         }

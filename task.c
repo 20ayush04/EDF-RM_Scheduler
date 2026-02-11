@@ -1,7 +1,7 @@
 #include "task.h"
 
-Task task_set[MAX_TASKS];
-int NUM_TASKS = 0;
+Task taskSet[MAX_TASKS];
+int numTasks = 0;
 
 static int gcd(int a, int b) {
     return (b == 0) ? a : gcd(b, a % b);
@@ -11,34 +11,41 @@ static int lcm(int a, int b) {
     return (a * b) / gcd(a, b);
 }
 
-void GET_DATA(FILE *fp) {
-    fscanf(fp, "%d", &NUM_TASKS);
+void getData(FILE *fp) {
+    fscanf(fp, "%d", &numTasks);
 
-    for (int i = 0; i < NUM_TASKS; i++) {
+    for (int i = 0; i < numTasks; i++) {
         fscanf(fp, "%d %d %d %d",
-               &task_set[i].phase,
-               &task_set[i].period,
-               &task_set[i].wcet,
-               &task_set[i].deadline);
+               &taskSet[i].phase,
+               &taskSet[i].period,
+               &taskSet[i].wcet,
+               &taskSet[i].deadline);
 
-        task_set[i].task_id = i + 1;
+        taskSet[i].taskId = i + 1;
     }
 }
 
-void RESET_TASK_STATE(void) {
-    for (int i = 0; i < NUM_TASKS; i++) {
-        task_set[i].remaining_time = 0;
-        task_set[i].next_release   = task_set[i].phase;
-        task_set[i].abs_deadline   = 0;
-        task_set[i].job_count      = 0;
-        task_set[i].current_job    = 0;
-        task_set[i].last_exec_time = -1;
+void resetTaskState(void) {
+    for (int i = 0; i < numTasks; i++) {
+        taskSet[i].remainingTime = 0;
+        taskSet[i].nextRelease = taskSet[i].phase;
+        taskSet[i].absDeadline = 0;
+        taskSet[i].jobCount = 0;
+        taskSet[i].currentJob = 0;
+        taskSet[i].lastExecTime = -1;
     }
 }
 
-int COMPUTE_HYPERPERIOD(void) {
-    int hp = task_set[0].period;
-    for (int i = 1; i < NUM_TASKS; i++)
-        hp = lcm(hp, task_set[i].period);
+int computeHyperperiod(void) {
+    int hp = taskSet[0].period;
+    for (int i = 1; i < numTasks; i++)
+        hp = lcm(hp, taskSet[i].period);
     return hp;
+}
+
+double computeUtilization(void) {
+    double u = 0.0;
+    for (int i = 0; i < numTasks; i++)
+        u += (double)taskSet[i].wcet / taskSet[i].period;
+    return u;
 }

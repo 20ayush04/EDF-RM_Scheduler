@@ -8,15 +8,13 @@ typedef struct {
     int size;
 } PriorityQueue;
 
-void PQ_INIT(PriorityQueue *pq);
-int PQ_EMPTY(PriorityQueue *pq);
+void pqInit(PriorityQueue *pq);
+int pqEmpty(PriorityQueue *pq);
 
-/* EDF */
-void PQ_PUSH_EDF(PriorityQueue *pq, Task *t);
-Task* PQ_POP_EDF(PriorityQueue *pq);
+void pqPushEdf(PriorityQueue *pq, Task *t);
+Task* pqPopEdf(PriorityQueue *pq);
 
-/* RM */
-void PQ_PUSH_RM(PriorityQueue *pq, Task *t);
-Task* PQ_POP_RM(PriorityQueue *pq);
+void pqPushRm(PriorityQueue *pq, Task *t);
+Task* pqPopRm(PriorityQueue *pq);
 
 #endif

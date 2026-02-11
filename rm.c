@@ -3,43 +3,73 @@
 #include "pq.h"
 #include "task.h"
 
-void RM_SCHEDULER(int hyperperiod) {
+void rmScheduler(int hyperperiod)
+{
     PriorityQueue pq;
-    PQ_INIT(&pq);
-    RESET_TASK_STATE();
+    pqInit(&pq);
+    resetTaskState();
 
     printf("\nRM Scheduling\n");
 
-    for (int time = 0; time < hyperperiod; time++) {
+    for (int time = 0; time < hyperperiod; time++)
+    {
+        /* -------- Deadline Miss Check -------- */
+        for (int i = 0; i < numTasks; i++)
+        {
+            if (taskSet[i].remainingTime > 0 &&
+                time >= taskSet[i].absDeadline)
+            {
+                printf("\nDeadline Missed by TASK%d JOB%d at time %d\n",
+                       taskSet[i].taskId,
+                       taskSet[i].currentJob,
+                       time);
 
-        for (int i = 0; i < NUM_TASKS; i++) {
-            if (time == task_set[i].next_release) {
-                task_set[i].remaining_time = task_set[i].wcet;
-                task_set[i].next_release  += task_set[i].period;
-
-                task_set[i].job_count++;
-                task_set[i].current_job = task_set[i].job_count;
-
-                PQ_PUSH_RM(&pq, &task_set[i]);
+                printf("Task Set is NOT schedulable under RM\n");
+                return;
             }
         }
 
-        if (!PQ_EMPTY(&pq)) {
-            Task *t = PQ_POP_RM(&pq);
+        /* -------- Job Release -------- */
+        for (int i = 0; i < numTasks; i++)
+        {
+            if (time == taskSet[i].nextRelease)
+            {
+                taskSet[i].remainingTime = taskSet[i].wcet;
+                taskSet[i].absDeadline = time + taskSet[i].deadline;
+                taskSet[i].nextRelease += taskSet[i].period;
+
+                taskSet[i].jobCount++;
+                taskSet[i].currentJob = taskSet[i].jobCount;
+
+                pqPushRm(&pq, &taskSet[i]);
+            }
+        }
+
+        /* -------- Scheduling -------- */
+        if (!pqEmpty(&pq))
+        {
+            Task *t = pqPopRm(&pq);
 
             printf("Time %d -> TASK%d JOB%d",
-                   time, t->task_id, t->current_job);
+                   time,
+                   t->taskId,
+                   t->currentJob);
 
-            t->remaining_time--;
+            t->remainingTime--;
 
-            if (t->remaining_time == 0) {
+            if (t->remainingTime == 0)
                 printf(" (Done)\n");
-            } else {
+            else
+            {
                 printf("\n");
-                PQ_PUSH_RM(&pq, t);
+                pqPushRm(&pq, t);
             }
-        } else {
+        }
+        else
+        {
             printf("Time %d -> IDLE\n", time);
         }
     }
+
+    printf("\nTask Set is schedulable under RM\n");
 }

@@ -1,47 +1,40 @@
 #include "pq.h"
 
 /* ---------- Common ---------- */
-void PQ_INIT(PriorityQueue *pq) {
+
+void pqInit(PriorityQueue *pq) {
     pq->size = 0;
 }
 
-int PQ_EMPTY(PriorityQueue *pq) {
+int pqEmpty(PriorityQueue *pq) {
     return pq->size == 0;
 }
 
-/* ---------- EDF (deadline + recency + task_id) ---------- */
-void PQ_PUSH_EDF(PriorityQueue *pq, Task *t) {
+/* ---------- EDF ---------- */
+
+static int edfHigherPriority(Task *a, Task *b) {
+    if (a->absDeadline != b->absDeadline)
+        return a->absDeadline < b->absDeadline;
+
+    if (a->lastExecTime != b->lastExecTime)
+        return a->lastExecTime > b->lastExecTime;
+
+    return a->taskId < b->taskId;
+}
+
+void pqPushEdf(PriorityQueue *pq, Task *t) {
     int i = pq->size++;
-
     while (i > 0) {
-        Task *parent = pq->data[(i - 1) / 2];
-
-        if (parent->abs_deadline < t->abs_deadline)
+        int parent = (i - 1) / 2;
+        if (edfHigherPriority(pq->data[parent], t))
             break;
-
-        if (parent->abs_deadline == t->abs_deadline) {
-
-            if (parent->last_exec_time > t->last_exec_time)
-                break;
-
-            if (parent->last_exec_time < t->last_exec_time) {
-                pq->data[i] = parent;
-                i = (i - 1) / 2;
-                continue;
-            }
-
-            if (parent->task_id <= t->task_id)
-                break;
-        }
-
-        pq->data[i] = parent;
-        i = (i - 1) / 2;
+        pq->data[i] = pq->data[parent];
+        i = parent;
     }
-
     pq->data[i] = t;
 }
 
-Task* PQ_POP_EDF(PriorityQueue *pq) {
+Task* pqPopEdf(PriorityQueue *pq) {
     Task *top = pq->data[0];
     Task *last = pq->data[--pq->size];
 
@@ -49,28 +42,14 @@ Task* PQ_POP_EDF(PriorityQueue *pq) {
     while (2 * i + 1 < pq->size) {
         int child = 2 * i + 1;
 
-        if (child + 1 < pq->size) {
-            Task *c1 = pq->data[child];
-            Task *c2 = pq->data[child + 1];
+        if (child + 1 < pq->size &&
+            edfHigherPriority(pq->data[child + 1], pq->data[child]))
+            child++;
 
-            if (c2->abs_deadline < c1->abs_deadline ||
-               (c2->abs_deadline == c1->abs_deadline &&
-                (c2->last_exec_time > c1->last_exec_time ||
-                (c2->last_exec_time == c1->last_exec_time &&
-                 c2->task_id < c1->task_id))))
-                child++;
-        }
-
-        Task *c = pq->data[child];
-
-        if (last->abs_deadline < c->abs_deadline ||
-           (last->abs_deadline == c->abs_deadline &&
-            (last->last_exec_time > c->last_exec_time ||
-            (last->last_exec_time == c->last_exec_time &&
-             last->task_id <= c->task_id))))
+        if (edfHigherPriority(last, pq->data[child]))
             break;
 
-        pq->data[i] = c;
+        pq->data[i] = pq->data[child];
         i = child;
     }
 
@@ -78,26 +57,30 @@ Task* PQ_POP_EDF(PriorityQueue *pq) {
     return top;
 }
 
-/* ---------- RM (period only) ---------- */
-void PQ_PUSH_RM(PriorityQueue *pq, Task *t) {
+/* ---------- RM ---------- */
+
+void pqPushRm(PriorityQueue *pq, Task *t) {
     int i = pq->size++;
-    while (i > 0 && pq->data[(i - 1) / 2]->period > t->period) {
-        pq->data[i] = pq->data[(i - 1) / 2];
-        i = (i - 1) / 2;
+    while (i > 0) {
+        int parent = (i - 1) / 2;
+        if (pq->data[parent]->period <= t->period)
+            break;
+        pq->data[i] = pq->data[parent];
+        i = parent;
     }
     pq->data[i] = t;
 }
 
-Task* PQ_POP_RM(PriorityQueue *pq) {
+Task* pqPopRm(PriorityQueue *pq) {
     Task *top = pq->data[0];
     Task *last = pq->data[--pq->size];
 
     int i = 0;
     while (2 * i + 1 < pq->size) {
         int child = 2 * i + 1;
+
         if (child + 1 < pq->size &&
-            pq->data[child + 1]->period <
-            pq->data[child]->period)
+            pq->data[child + 1]->period < pq->data[child]->period)
             child++;
 
         if (last->period <= pq->data[child]->period)
