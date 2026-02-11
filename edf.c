@@ -3,19 +3,26 @@
 #include "pq.h"
 #include "task.h"
 
-void edfScheduler(int hyperperiod) {
-
+void edfScheduler(int hyperperiod)
+{
     PriorityQueue pq;
     pqInit(&pq);
     resetTaskState();
 
     printf("\nEDF Scheduling\n");
+    printf("\nStart   End     Task    Job\n");
+    printf("-----   -----   -----   -----\n");
 
-    for (int time = 0; time < hyperperiod; time++) {
+    Task *currentTask = NULL;
+    int segmentStart = 0;
 
-        for (int i = 0; i < numTasks; i++) {
-            if (time == taskSet[i].nextRelease) {
-
+    for (int time = 0; time < hyperperiod; time++)
+    {
+        /* -------- Job Release -------- */
+        for (int i = 0; i < numTasks; i++)
+        {
+            if (time == taskSet[i].nextRelease)
+            {
                 taskSet[i].remainingTime = taskSet[i].wcet;
                 taskSet[i].absDeadline = time + taskSet[i].deadline;
                 taskSet[i].nextRelease += taskSet[i].period;
@@ -27,25 +34,56 @@ void edfScheduler(int hyperperiod) {
             }
         }
 
-        if (!pqEmpty(&pq)) {
+        Task *nextTask = NULL;
 
-            Task *t = pqPopEdf(&pq);
+        if (!pqEmpty(&pq))
+            nextTask = pqPopEdf(&pq);
 
-            printf("Time %d -> TASK%d JOB%d",
-                   time, t->taskId, t->currentJob);
-
-            t->remainingTime--;
-            t->lastExecTime = time;
-
-            if (t->remainingTime == 0)
-                printf(" (Done)\n");
-            else {
-                printf("\n");
-                pqPushEdf(&pq, t);
+        /* -------- Context Switch -------- */
+        if (currentTask != nextTask)
+        {
+            if (currentTask != NULL)
+            {
+                printf("%-7d %-7d T%-6d J%-6d\n",
+                       segmentStart,
+                       time,
+                       currentTask->taskId,
+                       currentTask->currentJob);
             }
 
-        } else {
-            printf("Time %d -> IDLE\n", time);
+            segmentStart = time;
+            currentTask = nextTask;
         }
+
+        /* -------- Execute -------- */
+        if (currentTask != NULL)
+        {
+            currentTask->remainingTime--;
+            currentTask->lastExecTime = time;
+
+            if (currentTask->remainingTime > 0)
+            {
+                pqPushEdf(&pq, currentTask);
+            }
+            else
+            {
+                printf("%-7d %-7d T%-6d J%-6d\n",
+                       segmentStart,
+                       time + 1,
+                       currentTask->taskId,
+                       currentTask->currentJob);
+
+                currentTask = NULL;
+            }
+        }
+    }
+
+    if (currentTask != NULL)
+    {
+        printf("%-7d %-7d T%-6d J%-6d\n",
+               segmentStart,
+               hyperperiod,
+               currentTask->taskId,
+               currentTask->currentJob);
     }
 }
