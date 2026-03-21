@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "task.h"
 
 Task taskSet[MAX_TASKS];
@@ -25,17 +26,6 @@ void getData(FILE *fp) {
     }
 }
 
-void resetTaskState(void) {
-    for (int i = 0; i < numTasks; i++) {
-        taskSet[i].remainingTime = 0;
-        taskSet[i].nextRelease = taskSet[i].phase;
-        taskSet[i].absDeadline = 0;
-        taskSet[i].jobCount = 0;
-        taskSet[i].currentJob = 0;
-        taskSet[i].lastExecTime = -1;
-    }
-}
-
 int computeHyperperiod(void) {
     int hp = taskSet[0].period;
     for (int i = 1; i < numTasks; i++)
@@ -44,7 +34,7 @@ int computeHyperperiod(void) {
 }
 
 double computeUtilization(void) {
-    double u = 0.0;
+    double u = 0;
     for (int i = 0; i < numTasks; i++)
         u += (double)taskSet[i].wcet / taskSet[i].period;
     return u;

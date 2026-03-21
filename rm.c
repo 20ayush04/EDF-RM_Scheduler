@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "rm.h"
 #include "pq.h"
 #include "task.h"
 
@@ -7,109 +6,64 @@ void rmScheduler(int hyperperiod)
 {
     PriorityQueue pq;
     pqInit(&pq);
-    resetTaskState();
+
+    int time = 0;
+    int jobId[MAX_TASKS] = {0};
 
     printf("\nRM Scheduling\n");
-    printf("\nStart   End     Task    Job\n");
-    printf("-----   -----   -----   -----\n");
+    printf("Start   End     Task    Job\n");
 
-    Task *currentTask = NULL;
-    int segmentStart = 0;
-
-    for (int time = 0; time < hyperperiod; time++)
+    while (time < hyperperiod)
     {
-        /* -------- Deadline Miss Check -------- */
-        for (int i = 0; i < numTasks; i++)
-        {
-            if (taskSet[i].remainingTime > 0 &&
-                time >= taskSet[i].absDeadline)
-            {
-                if (currentTask != NULL)
-                {
-                    printf("%-7d %-7d T%-6d J%-6d\n",
-                           segmentStart,
-                           time,
-                           currentTask->taskId,
-                           currentTask->currentJob);
-                }
+        /* release */
+        for (int i = 0; i < numTasks; i++) {
+            if (time % taskSet[i].period == 0) {
+                Job j;
+                j.taskId = taskSet[i].taskId;
+                j.jobId = ++jobId[i];
+                j.releaseTime = time;
+                j.absDeadline = time + taskSet[i].deadline;
+                j.remainingTime = taskSet[i].wcet;
+                j.period = taskSet[i].period;
 
-                printf("\nDeadline Missed by T%d J%d at time %d\n",
-                       taskSet[i].taskId,
-                       taskSet[i].currentJob,
-                       time);
-
-                printf("Task Set is NOT schedulable under RM\n");
-                return;
+                pqPushRm(&pq, j);
             }
         }
 
-        /* -------- Job Release -------- */
-        for (int i = 0; i < numTasks; i++)
-        {
-            if (time == taskSet[i].nextRelease)
-            {
-                taskSet[i].remainingTime = taskSet[i].wcet;
-                taskSet[i].absDeadline = time + taskSet[i].deadline;
-                taskSet[i].nextRelease += taskSet[i].period;
-
-                taskSet[i].jobCount++;
-                taskSet[i].currentJob = taskSet[i].jobCount;
-
-                pqPushRm(&pq, &taskSet[i]);
-            }
+        if (pqEmpty(&pq)) {
+            time++;
+            continue;
         }
 
-        Task *nextTask = NULL;
+        Job j = pqPopRm(&pq);
 
-        if (!pqEmpty(&pq))
-            nextTask = pqPopRm(&pq);
-
-        /* -------- Context Switch -------- */
-        if (currentTask != nextTask)
-        {
-            if (currentTask != NULL)
-            {
-                printf("%-7d %-7d T%-6d J%-6d\n",
-                       segmentStart,
-                       time,
-                       currentTask->taskId,
-                       currentTask->currentJob);
-            }
-
-            segmentStart = time;
-            currentTask = nextTask;
+        /* deadline check */
+        if (time >= j.absDeadline && j.remainingTime > 0) {
+            printf("Deadline Missed T%d J%d at %d\n",
+                   j.taskId, j.jobId, time);
+            return;
         }
 
-        /* -------- Execute -------- */
-        if (currentTask != NULL)
-        {
-            currentTask->remainingTime--;
+        int exec = j.remainingTime;
 
-            if (currentTask->remainingTime > 0)
-            {
-                pqPushRm(&pq, currentTask);
-            }
-            else
-            {
-                printf("%-7d %-7d T%-6d J%-6d\n",
-                       segmentStart,
-                       time + 1,
-                       currentTask->taskId,
-                       currentTask->currentJob);
-
-                currentTask = NULL;
-            }
+        int nextRelease = hyperperiod;
+        for (int i = 0; i < numTasks; i++) {
+            int nr = ((time / taskSet[i].period) + 1) * taskSet[i].period;
+            if (nr < nextRelease) nextRelease = nr;
         }
-    }
 
-    if (currentTask != NULL)
-    {
+        if (time + exec > nextRelease)
+            exec = nextRelease - time;
+
         printf("%-7d %-7d T%-6d J%-6d\n",
-               segmentStart,
-               hyperperiod,
-               currentTask->taskId,
-               currentTask->currentJob);
+               time, time + exec, j.taskId, j.jobId);
+
+        j.remainingTime -= exec;
+        time += exec;
+
+        if (j.remainingTime > 0)
+            pqPushRm(&pq, j);
     }
 
-    printf("\nTask Set is schedulable under RM\n");
+    printf("Schedulable under RM\n");
 }

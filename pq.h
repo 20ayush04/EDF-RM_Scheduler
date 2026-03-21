@@ -4,17 +4,17 @@
 #include "task.h"
 
 typedef struct {
-    Task *data[MAX_TASKS];
+    Job data[100];
     int size;
 } PriorityQueue;
 
 void pqInit(PriorityQueue *pq);
 int pqEmpty(PriorityQueue *pq);
 
-void pqPushEdf(PriorityQueue *pq, Task *t);
-Task* pqPopEdf(PriorityQueue *pq);
+void pqPushEdf(PriorityQueue *pq, Job j);
+Job pqPopEdf(PriorityQueue *pq);
 
-void pqPushRm(PriorityQueue *pq, Task *t);
-Task* pqPopRm(PriorityQueue *pq);
+void pqPushRm(PriorityQueue *pq, Job j);
+Job pqPopRm(PriorityQueue *pq);
 
-#endif
+#endif  

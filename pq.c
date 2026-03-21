@@ -12,45 +12,41 @@ int pqEmpty(PriorityQueue *pq) {
 
 /* ---------- EDF ---------- */
 
-static int edfHigherPriority(Task *a, Task *b) {
-    if (a->absDeadline != b->absDeadline)
-        return a->absDeadline < b->absDeadline;
+static int higherEdf(Job a, Job b) {
+    if (a.absDeadline != b.absDeadline)
+        return a.absDeadline < b.absDeadline;
 
-    if (a->lastExecTime != b->lastExecTime)
-        return a->lastExecTime > b->lastExecTime;
+    if (a.lastExecTime != b.lastExecTime)
+        return a.lastExecTime > b.lastExecTime;
 
-    return a->taskId < b->taskId;
+    return a.taskId < b.taskId;
 }
 
-void pqPushEdf(PriorityQueue *pq, Task *t) {
+void pqPushEdf(PriorityQueue *pq, Job j) {
     int i = pq->size++;
     while (i > 0) {
-        int parent = (i - 1) / 2;
-        if (edfHigherPriority(pq->data[parent], t))
-            break;
-        pq->data[i] = pq->data[parent];
-        i = parent;
+        int p = (i - 1) / 2;
+        if (higherEdf(pq->data[p], j)) break;
+        pq->data[i] = pq->data[p];
+        i = p;
     }
-    pq->data[i] = t;
+    pq->data[i] = j;
 }
 
-Task* pqPopEdf(PriorityQueue *pq) {
-    Task *top = pq->data[0];
-    Task *last = pq->data[--pq->size];
+Job pqPopEdf(PriorityQueue *pq) {
+    Job top = pq->data[0];
+    Job last = pq->data[--pq->size];
 
     int i = 0;
-    while (2 * i + 1 < pq->size) {
-        int child = 2 * i + 1;
+    while (2*i+1 < pq->size) {
+        int c = 2*i+1;
+        if (c+1 < pq->size && higherEdf(pq->data[c+1], pq->data[c]))
+            c++;
 
-        if (child + 1 < pq->size &&
-            edfHigherPriority(pq->data[child + 1], pq->data[child]))
-            child++;
+        if (higherEdf(last, pq->data[c])) break;
 
-        if (edfHigherPriority(last, pq->data[child]))
-            break;
-
-        pq->data[i] = pq->data[child];
-        i = child;
+        pq->data[i] = pq->data[c];
+        i = c;
     }
 
     pq->data[i] = last;
@@ -59,35 +55,32 @@ Task* pqPopEdf(PriorityQueue *pq) {
 
 /* ---------- RM ---------- */
 
-void pqPushRm(PriorityQueue *pq, Task *t) {
+void pqPushRm(PriorityQueue *pq, Job j) {
     int i = pq->size++;
     while (i > 0) {
-        int parent = (i - 1) / 2;
-        if (pq->data[parent]->period <= t->period)
-            break;
-        pq->data[i] = pq->data[parent];
-        i = parent;
+        int p = (i - 1) / 2;
+        if (pq->data[p].period <= j.period) break;
+        pq->data[i] = pq->data[p];
+        i = p;
     }
-    pq->data[i] = t;
+    pq->data[i] = j;
 }
 
-Task* pqPopRm(PriorityQueue *pq) {
-    Task *top = pq->data[0];
-    Task *last = pq->data[--pq->size];
+Job pqPopRm(PriorityQueue *pq) {
+    Job top = pq->data[0];
+    Job last = pq->data[--pq->size];
 
     int i = 0;
-    while (2 * i + 1 < pq->size) {
-        int child = 2 * i + 1;
+    while (2*i+1 < pq->size) {
+        int c = 2*i+1;
+        if (c+1 < pq->size &&
+            pq->data[c+1].period < pq->data[c].period)
+            c++;
 
-        if (child + 1 < pq->size &&
-            pq->data[child + 1]->period < pq->data[child]->period)
-            child++;
+        if (last.period <= pq->data[c].period) break;
 
-        if (last->period <= pq->data[child]->period)
-            break;
-
-        pq->data[i] = pq->data[child];
-        i = child;
+        pq->data[i] = pq->data[c];
+        i = c;
     }
 
     pq->data[i] = last;
