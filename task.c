@@ -15,6 +15,11 @@ static int lcm(int a, int b) {
 void getData(FILE *fp) {
     fscanf(fp, "%d", &numTasks);
 
+    if (numTasks <= 0) {
+        printf("Tasks must be > 0\n");
+        return 1;
+    }
+
     for (int i = 0; i < numTasks; i++) {
         fscanf(fp, "%d %d %d %d",
                &taskSet[i].phase,
