@@ -17,4 +17,4 @@ Job pqPopEdf(PriorityQueue *pq);
 void pqPushRm(PriorityQueue *pq, Job j);
 Job pqPopRm(PriorityQueue *pq);
 
-#endif  
+#endif

@@ -1,38 +1,43 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "task.h"
-#include "edf.h"
-#include "rm.h"
 
-int main(int argc, char *argv[]) {
+void edfScheduler(int);
+void rmScheduler(int);
 
+int main(int argc, char *argv[])
+{
     if (argc != 2) {
-        printf("Usage: %s <input_file>\n", argv[0]);
+        printf("Usage: %s file\n", argv[0]);
         return 1;
     }
 
     FILE *fp = fopen(argv[1], "r");
     if (!fp) {
-        printf("File not found\n");
+        printf("File error\n");
         return 1;
     }
 
     getData(fp);
     fclose(fp);
 
+    if (numTasks <= 0) {
+        printf("Tasks must be > 0\n");
+        return 1;
+    }
+
     double u = computeUtilization();
+    printf("Utilization = %.3f\n", u);
 
-    printf("Total Utilization = %.3f\n", u);
-
-    if (u > 1.0) {
-        printf("Task Set is NOT schedulable (Utilization > 1)\n");
+    if (u > 1) {
+        printf("Not schedulable (U>1)\n");
         return 0;
     }
 
-    int hyperperiod = computeHyperperiod();
+    int hp = computeHyperperiod();
 
-    edfScheduler(hyperperiod);
-    rmScheduler(hyperperiod);
+    edfScheduler(hp);
+    rmScheduler(hp);
 
     return 0;
 }
