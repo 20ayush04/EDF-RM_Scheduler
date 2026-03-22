@@ -4,7 +4,7 @@
 #include "pq.h"
 #include "metrics.h"
 
-extern int useActual;   // from main.c
+extern int useActual;  
 
 void rmScheduler(int hyperperiod)
 {
@@ -53,7 +53,7 @@ void rmScheduler(int hyperperiod)
                 j.lastExecTime = -1;
                 j.infoIndex = infoCount;
 
-                /* -------- STORE JOB INFO -------- */
+        
                 info[infoCount++] = (JobInfo){
                     j.taskId,
                     j.jobId,
@@ -84,7 +84,6 @@ void rmScheduler(int hyperperiod)
             }
         }
 
-        /* -------- IDLE CASE -------- */
         if (pqEmpty(&pq))
         {
             sched[schedSize++] =
@@ -93,17 +92,14 @@ void rmScheduler(int hyperperiod)
             continue;
         }
 
-        /* -------- PICK HIGHEST PRIORITY -------- */
         Job j = pqPopRM(&pq);
 
-        /* -------- FIRST START -------- */
         if (j.firstStartTime == -1)
         {
             j.firstStartTime = time;
             info[j.infoIndex].firstStartTime = time;
         }
 
-        /* -------- EXECUTE 1 UNIT -------- */
         sched[schedSize++] =
             (Schedule){time, time + 1, j.taskId, j.jobId, 0};
 
@@ -113,7 +109,7 @@ void rmScheduler(int hyperperiod)
 
         time++;
 
-        /* -------- COMPLETION -------- */
+     
         if (j.remainingTime == 0)
         {
             sched[schedSize - 1].isComplete = 1;
@@ -121,7 +117,7 @@ void rmScheduler(int hyperperiod)
         }
         else
         {
-            /* put back for future execution */
+           
             pqPushRM(&pq, j);
         }
     }
