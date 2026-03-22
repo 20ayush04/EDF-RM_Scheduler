@@ -1,19 +1,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "task.h"
+#include "metrics.h"
 
 void edfScheduler(int);
 void rmScheduler(int);
 
+int useActual = 0;   // 🔥 GLOBAL DEFINITION
+
 int main(int argc, char *argv[])
 {
-    if (argc != 2) {
-        printf("Usage: %s file\n", argv[0]);
+    if (argc != 2)
+    {
+        printf("Usage: %s input_file\n", argv[0]);
         return 1;
     }
 
     FILE *fp = fopen(argv[1], "r");
-    if (!fp) {
+    if (!fp)
+    {
         printf("File error\n");
         return 1;
     }
@@ -21,23 +26,46 @@ int main(int argc, char *argv[])
     getData(fp);
     fclose(fp);
 
-    if (numTasks <= 0) {
-        printf("Tasks must be > 0\n");
-        return 1;
-    }
-
-    double u = computeUtilization();
-    printf("Utilization = %.3f\n", u);
-
-    if (u > 1) {
-        printf("Not schedulable (U>1)\n");
-        return 0;
-    }
+    srand(42);   // 🔥 IMPORTANT
 
     int hp = computeHyperperiod();
 
-    edfScheduler(hp);
-    rmScheduler(hp);
+    // /* ================= WCET MODE ================= */
+    // printf("\n========== WCET MODE ==========\n");
 
+    // useActual = 0;
+
+    // edfScheduler(hp);
+    // printSchedule();
+    // printMetrics();
+
+    // schedSize = 0;
+    // infoCount = 0;
+
+    // rmScheduler(hp);
+    // printSchedule();
+    // printMetrics();
+
+
+    /* ================= ACTUAL MODE ================= */
+    printf("\n========== ACTUAL MODE ==========\n");
+
+    useActual = 1;
+
+    schedSize = 0;
+    infoCount = 0;
+
+    edfScheduler(hp);
+    printSchedule();
+    printMetrics();
+
+    schedSize = 0;
+    infoCount = 0;
+
+    rmScheduler(hp);
+    printSchedule();
+    printMetrics();
+
+    free(taskSet);
     return 0;
 }

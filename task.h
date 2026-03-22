@@ -1,7 +1,11 @@
 #ifndef TASK_H
 #define TASK_H
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #define MAX_TASKS 50
+#define MAX_JOBS 1000
 
 typedef struct {
     int taskId;
@@ -12,19 +16,18 @@ typedef struct {
 } Task;
 
 typedef struct {
-    int taskId;
-    int jobId;
-
-    int releaseTime;
-    int absDeadline;
-
+    int taskId, jobId;
+    int releaseTime, absDeadline;
     int remainingTime;
-
-    int period;          // for RM
-    int lastExecTime;    // for EDF
+    int totalExecution;
+    int firstStartTime;
+    int completionTime;
+    int lastExecTime;
+    int infoIndex;
+    int period;
 } Job;
 
-extern Task taskSet[MAX_TASKS];
+extern Task *taskSet;
 extern int numTasks;
 
 void getData(FILE *fp);

@@ -1,0 +1,17 @@
+Decision Points: 30
+Context Switches:8 Vol:8 Invol:0
+Preemptions:0
+Cache Impact:4
+CPU Util:0.600
+
+Task 1
+RT min:3 max:6 avg:4.33
+WT min:0 max:0 avg:0.00
+Latency min:3 max:6 avg:4.33
+Lateness min:-7 max:-4 avg:-5.67
+
+Task 2
+RT min:3 max:8 avg:5.50
+WT min:0 max:6 avg:3.00
+Latency min:2 max:3 avg:2.50
+Lateness min:-12 max:-7 avg:-9.50
