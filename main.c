@@ -6,7 +6,7 @@
 void edfScheduler(int);
 void rmScheduler(int);
 
-int useActual = 0;   // 🔥 GLOBAL DEFINITION
+int useActual = 0;  
 
 int main(int argc, char *argv[])
 {
@@ -26,12 +26,10 @@ int main(int argc, char *argv[])
     getData(fp);
     fclose(fp);
 
-    srand(42);   // 🔥 IMPORTANT
+    srand(42);   
 
     int hp = computeHyperperiod();
 
-    // /* ================= WCET MODE ================= */
-    // printf("\n========== WCET MODE ==========\n");
 
     // useActual = 0;
 
@@ -47,8 +45,7 @@ int main(int argc, char *argv[])
     // printMetrics();
 
 
-    /* ================= ACTUAL MODE ================= */
-    printf("\n========== ACTUAL MODE ==========\n");
+
 
     useActual = 1;
 
@@ -59,12 +56,12 @@ int main(int argc, char *argv[])
     printSchedule();
     printMetrics();
 
-    schedSize = 0;
-    infoCount = 0;
+    // schedSize = 0;
+    // infoCount = 0;
 
-    rmScheduler(hp);
-    printSchedule();
-    printMetrics();
+    // rmScheduler(hp);
+    // printSchedule();
+    // printMetrics();
 
     free(taskSet);
     return 0;
