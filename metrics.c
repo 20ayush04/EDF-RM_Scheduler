@@ -54,7 +54,6 @@ void printMetrics()
 {
     FILE *fp = fopen("output.txt", "w");
 
-    /* A — Decision Points */
     fprintf(fp, "Decision Points: %d\n", schedSize);
 
     int cs = 0, vol = 0, invol = 0, pre = 0;
@@ -88,7 +87,7 @@ void printMetrics()
     int nonActive = 0;
     for (int i = 0; i < schedSize; i++)
     {
-        if (sched[i].taskId < 1)   /* -1 IDLE or -2 SHUTDOWN */
+        if (sched[i].taskId < 1)   
             nonActive += sched[i].end - sched[i].start;
     }
     fprintf(fp, "CPU Util:%.3f\n", (double)(total - nonActive) / total);
@@ -137,14 +136,10 @@ void printMetrics()
     {
         if (cnt[i] == 0) continue;
         fprintf(fp, "\nTask %d\n", i + 1);
-        fprintf(fp, "RT   min:%d max:%d avg:%.2f\n",
-                minRT[i],   maxRT[i],   sumRT[i]   / cnt[i]);
-        fprintf(fp, "WT   min:%d max:%d avg:%.2f\n",
-                minWT[i],   maxWT[i],   sumWT[i]   / cnt[i]);
-        fprintf(fp, "Latency  min:%d max:%d avg:%.2f\n",
-                minLat[i],  maxLat[i],  sumLat[i]  / cnt[i]);
-        fprintf(fp, "Lateness min:%d max:%d avg:%.2f\n",
-                minLate[i], maxLate[i], sumLate[i] / cnt[i]);
+        fprintf(fp, "RT   min:%d max:%d avg:%.2f\n",minRT[i],   maxRT[i],   sumRT[i]   / cnt[i]);
+        fprintf(fp, "WT   min:%d max:%d avg:%.2f\n",minWT[i],   maxWT[i],   sumWT[i]   / cnt[i]);
+        fprintf(fp, "Latency  min:%d max:%d avg:%.2f\n",minLat[i],  maxLat[i],  sumLat[i]  / cnt[i]);
+        fprintf(fp, "Lateness min:%d max:%d avg:%.2f\n",minLate[i], maxLate[i], sumLate[i] / cnt[i]);
     }
 
     fclose(fp);

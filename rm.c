@@ -31,7 +31,6 @@ void rmScheduler(int hyperperiod)
 
                 int wcet = taskSet[i].wcet;
 
-                /* -------- ACTUAL EXECUTION -------- */
                 if (useActual)
                 {
                     int minExec = (int)ceil(0.4 * wcet);
