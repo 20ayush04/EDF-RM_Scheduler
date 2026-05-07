@@ -4,7 +4,7 @@
 #include "metrics.h"
 
 void edfScheduler(int);
-void rmScheduler(int);
+// void rmScheduler(int);
 
 int useActual = 0;  
 
